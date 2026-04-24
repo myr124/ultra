@@ -1,14 +1,19 @@
 import type { PropsWithChildren } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 
 import { theme } from "@/src/constants/theme";
 
 type SurfaceCardProps = PropsWithChildren<{
   accent?: string;
+  style?: StyleProp<ViewStyle>;
 }>;
 
-export function SurfaceCard({ accent, children }: SurfaceCardProps) {
-  return <View style={[styles.card, accent ? { borderLeftColor: accent } : undefined]}>{children}</View>;
+export function SurfaceCard({ accent, children, style }: SurfaceCardProps) {
+  return (
+    <View style={[styles.card, accent ? { borderLeftColor: accent } : undefined, style]}>
+      {children}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

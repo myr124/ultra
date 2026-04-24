@@ -2,6 +2,8 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { theme } from "@/src/constants/theme";
+
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
@@ -10,7 +12,7 @@ export default function RootLayout() {
         screenOptions={{
           headerShown: false,
           animation: "fade",
-          contentStyle: { backgroundColor: "#f3efe6" },
+          contentStyle: { backgroundColor: theme.colors.canvas },
         }}
       />
     </SafeAreaProvider>

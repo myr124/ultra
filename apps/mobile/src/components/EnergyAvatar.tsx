@@ -21,6 +21,8 @@ export function EnergyAvatar({ state }: EnergyAvatarProps) {
     <View
       style={[
         styles.shell,
+        state === "focused" ? styles.focused : undefined,
+        state === "drifting" ? styles.drifting : undefined,
         state === "redlining" ? styles.redlining : undefined,
         state === "recovering" ? styles.recovering : undefined,
       ]}
@@ -36,14 +38,25 @@ export function EnergyAvatar({ state }: EnergyAvatarProps) {
 
 const styles = StyleSheet.create({
   shell: {
-    width: 136,
-    borderRadius: 28,
+    width: 134,
+    borderRadius: 30,
     paddingHorizontal: 18,
     paddingVertical: 20,
     backgroundColor: theme.colors.paper,
     borderWidth: 1,
     borderColor: theme.colors.stroke,
     gap: 16,
+    shadowColor: theme.colors.shadow,
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 2,
+  },
+  focused: {
+    backgroundColor: "#f7efe0",
+  },
+  drifting: {
+    backgroundColor: "#efe5d9",
   },
   recovering: {
     backgroundColor: "#e3f0e7",
