@@ -8,14 +8,20 @@ datasource db {
 }
 
 model User {
-  id          String         @id @default(cuid())
-  email       String         @unique
-  name        String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  preferences UserPreference?
-  tasks       Task[]
-  snapshots   EnergySnapshot[]
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  name                String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  preferences         UserPreference?
+  tasks               Task[]
+  snapshots           EnergySnapshot[]
+  biometricSamples    BiometricSample[]
+  sleepSessions       SleepSession[]
+  recommendations     Recommendation[]
+  calendarConnections CalendarConnection[]
+  calendarEvents      CalendarEvent[]
+  nudges              Nudge[]
 }
 
 model UserPreference {
@@ -42,6 +48,8 @@ model Task {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, bucket, status])
 }
 
 model EnergySnapshot {
@@ -56,4 +64,99 @@ model EnergySnapshot {
   confidence        Float
   createdAt         DateTime @default(now())
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+}
+
+model CalendarConnection {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String
+  accountEmail String?
+  accessToken  String?
+  refreshToken String?
+  connectedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+}
+
+model CalendarEvent {
+  id         String   @id @default(cuid())
+  userId     String
+  provider   String
+  externalId String
+  title      String
+  startsAt   DateTime
+  endsAt     DateTime
+  busy       Boolean  @default(true)
+  imported   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider, externalId])
+  @@index([userId, startsAt, endsAt])
+}
+
+model BiometricSample {
+  id         String   @id @default(cuid())
+  userId     String
+  source     String
+  type       String
+  value      String
+  unit       String
+  recordedAt DateTime
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, recordedAt])
+}
+
+model SleepSession {
+  id              String   @id @default(cuid())
+  userId          String
+  startedAt       DateTime
+  endedAt         DateTime
+  durationMin     Int
+  qualityScore    Int
+  sleepStageLabel String?
+  source          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, endedAt])
+}
+
+model Recommendation {
+  id           String   @id @default(cuid())
+  userId       String
+  type         String
+  rationale    String
+  startsAt     DateTime
+  endsAt       DateTime
+  taskId       String?
+  energyTarget String
+  status       String   @default("pending")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, startsAt])
+}
+
+model Nudge {
+  id           String   @id @default(cuid())
+  userId       String
+  type         String
+  title        String
+  message      String
+  acknowledged Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, acknowledged, createdAt])
 }
