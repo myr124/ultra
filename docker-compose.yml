@@ -1,0 +1,18 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ultra-server
+    environment:
+      PORT: "3001"
+      DATABASE_URL: "file:./prisma/dev.db"
+      BETTER_AUTH_URL: "http://localhost:3001"
+      BETTER_AUTH_SECRET: "local-dev-secret"
+    ports:
+      - "3001:3001"
+    volumes:
+      - ultra_server_prisma:/app/apps/server/prisma
+
+volumes:
+  ultra_server_prisma:

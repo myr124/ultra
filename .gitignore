@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+coverage/
+.turbo/
+
+# Expo / React Native
+.expo/
+.expo-shared/
+apps/mobile/.expo/
+apps/mobile/web-build/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Databases and generated local artifacts
+*.db
+*.db-journal
+apps/server/src/generated/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

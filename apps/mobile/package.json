@@ -1,0 +1,26 @@
+{
+  "name": "@ultra/mobile",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start --clear",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ultra/shared": "workspace:*",
+    "expo": "55.0.17",
+    "expo-notifications": "55.0.20",
+    "expo-router": "55.0.13",
+    "expo-status-bar": "~3.0.8",
+    "react": "19.2.5",
+    "react-native": "0.85.2",
+    "react-native-safe-area-context": "5.6.2",
+    "react-native-screens": "~4.18.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Ultra",
+    "slug": "ultra",
+    "scheme": "ultra",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      "expo-notifications"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ultra.app"
+    },
+    "android": {
+      "package": "com.ultra.app"
+    }
+  }
+}

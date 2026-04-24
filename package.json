@@ -1,0 +1,17 @@
+{
+  "name": "ultra",
+  "private": true,
+  "packageManager": "pnpm@10.28.1",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @ultra/server --filter @ultra/mobile dev",
+    "dev:mobile": "pnpm --filter @ultra/mobile dev",
+    "dev:server": "pnpm --filter @ultra/server dev",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @ultra/server db:generate",
+    "db:push": "pnpm --filter @ultra/server db:push"
+  },
+  "devDependencies": {
+    "@types/node": "25.6.0",
+    "typescript": "5.9.3"
+  }
+}

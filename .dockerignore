@@ -1,0 +1,9 @@
+node_modules
+.expo
+.git
+.DS_Store
+dist
+build
+coverage
+apps/server/prisma/dev.db
+apps/server/prisma/dev.db-journal
