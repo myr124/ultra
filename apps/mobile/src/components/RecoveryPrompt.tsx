@@ -1,7 +1,9 @@
-import { StyleSheet, Text } from "react-native";
+import { View } from "react-native";
 
+import { Badge } from "@/components/ui/badge";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Text } from "@/components/ui/text";
 import { SurfaceCard } from "@/src/components/SurfaceCard";
-import { theme } from "@/src/constants/theme";
 
 type RecoveryPromptProps = {
   title: string;
@@ -10,36 +12,18 @@ type RecoveryPromptProps = {
 
 export function RecoveryPrompt({ title, body }: RecoveryPromptProps) {
   return (
-    <SurfaceCard accent={theme.colors.moss} style={styles.card}>
-      <Text style={styles.eyebrow}>Recovery Prompt</Text>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.body}>{body}</Text>
+    <SurfaceCard accent="accent" className="bg-accent/10">
+      <CardHeader className="gap-3 px-5 py-5">
+        <View className="flex-row items-center justify-between">
+          <Badge className="bg-accent">
+            <Text>Recover</Text>
+          </Badge>
+        </View>
+        <CardTitle className="text-3xl leading-8">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-5">
+        <Text className="text-muted-foreground leading-5">{body}</Text>
+      </CardContent>
     </SurfaceCard>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#edf5ee",
-  },
-  eyebrow: {
-    color: theme.colors.moss,
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  title: {
-    color: theme.colors.ink,
-    fontSize: 20,
-    lineHeight: 24,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  body: {
-    color: theme.colors.inkMuted,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-});

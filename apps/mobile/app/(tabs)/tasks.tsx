@@ -1,30 +1,35 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
+import { Badge } from "@/components/ui/badge";
+import { Text } from "@/components/ui/text";
 import { RecommendationCard } from "@/src/components/RecommendationCard";
 import { TaskBucketBoard } from "@/src/components/TaskBucketBoard";
-import { theme } from "@/src/constants/theme";
+import { ThemeToggleButton } from "@/src/components/ThemeToggleButton";
 import { mvpPreview } from "@/src/lib/mock-dashboard";
 
 export default function TasksScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.hero}>
-        <Text style={styles.kicker}>Task Allocation</Text>
-        <Text style={styles.title}>Three buckets, one energy-aware queue.</Text>
-        <Text style={styles.subtitle}>
-          Work, fitness, and fun stay visible together so the engine can protect intensity and
-          recovery in the same day.
-        </Text>
+    <ScrollView className="bg-background" contentContainerClassName="gap-5 px-5 pb-10 pt-20">
+      <View className="flex-row items-start justify-between gap-4">
+        <View className="gap-2">
+          <Badge variant="outline" className="self-start bg-secondary">
+            <Text>Tasks</Text>
+          </Badge>
+          <Text className="text-4xl font-bold tracking-tight text-foreground">Less drag.</Text>
+        </View>
+        <ThemeToggleButton />
       </View>
 
       <TaskBucketBoard buckets={mvpPreview.taskBuckets} />
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Suggested placements</Text>
-        <Text style={styles.sectionMeta}>Advisory only</Text>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-xl font-bold text-foreground">Suggested placements</Text>
+        <Badge variant="outline">
+          <Text>Advisory</Text>
+        </Badge>
       </View>
 
-      <View style={styles.stack}>
+      <View className="gap-3">
         {mvpPreview.recommendations.map((recommendation) => (
           <RecommendationCard key={recommendation.id} recommendation={recommendation} />
         ))}
@@ -32,55 +37,3 @@ export default function TasksScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 82,
-    paddingBottom: 40,
-    gap: 18,
-    backgroundColor: theme.colors.canvas,
-  },
-  hero: {
-    gap: 10,
-  },
-  kicker: {
-    color: theme.colors.accentWarm,
-    fontSize: 13,
-    fontWeight: "800",
-    letterSpacing: 1.4,
-    textTransform: "uppercase",
-  },
-  title: {
-    color: theme.colors.ink,
-    fontSize: 31,
-    lineHeight: 37,
-    fontWeight: "800",
-    fontFamily: "Georgia",
-  },
-  subtitle: {
-    color: theme.colors.inkMuted,
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "baseline",
-  },
-  sectionTitle: {
-    color: theme.colors.ink,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  sectionMeta: {
-    color: theme.colors.inkMuted,
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  stack: {
-    gap: 12,
-  },
-});

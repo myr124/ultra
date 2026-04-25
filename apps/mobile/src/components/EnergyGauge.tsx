@@ -1,100 +1,41 @@
-import { StyleSheet, Text, View } from "react-native";
+import { View } from "react-native";
 
 import type { EnergyState } from "@ultra/shared";
 
-import { theme } from "@/src/constants/theme";
+import { Badge } from "@/components/ui/badge";
+import { Text } from "@/components/ui/text";
 
 type EnergyGaugeProps = {
   energyState: EnergyState;
 };
 
-const phaseTone: Record<EnergyState["ultradianPhase"], string> = {
-  peak: theme.colors.moss,
-  transition: theme.colors.signal,
-  trough: theme.colors.accentWarm,
-};
-
 export function EnergyGauge({ energyState }: EnergyGaugeProps) {
   return (
-    <View style={styles.shell}>
-      <Text style={styles.kicker}>Composite Index</Text>
-      <Text style={styles.value}>{energyState.compositeIndex}</Text>
-      <View style={styles.barTrack}>
-        <View style={[styles.barFill, { width: `${energyState.compositeIndex}%` }]} />
+    <View className="flex-1 gap-4 py-2">
+      <Text className="text-muted-foreground text-xs uppercase tracking-[1.6px]">Today</Text>
+      <Text className="text-5xl font-bold text-foreground">{energyState.compositeIndex}</Text>
+      <View className="bg-primary/20 h-2 w-full overflow-hidden rounded-full">
+        <View
+          className="bg-primary h-full rounded-full"
+          style={{ width: `${Math.max(0, Math.min(100, energyState.compositeIndex))}%` }}
+        />
       </View>
-      <View style={styles.metrics}>
-        <View style={styles.metric}>
-          <Text style={styles.metricLabel}>Phase</Text>
-          <Text style={[styles.metricValue, { color: phaseTone[energyState.ultradianPhase] }]}>
-            {energyState.ultradianPhase}
-          </Text>
-        </View>
-        <View style={styles.metric}>
-          <Text style={styles.metricLabel}>Sleep</Text>
-          <Text style={styles.metricValue}>{energyState.sleepPressure}</Text>
-        </View>
-        <View style={styles.metric}>
-          <Text style={styles.metricLabel}>Trust</Text>
-          <Text style={styles.metricValue}>{Math.round(energyState.confidence * 100)}%</Text>
-        </View>
+      <View className="flex-row gap-2">
+        <Metric label="Phase" value={energyState.ultradianPhase} />
+        <Metric label="Sleep" value={`${energyState.sleepPressure}`} />
+        <Metric label="Trust" value={`${Math.round(energyState.confidence * 100)}%`} />
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  shell: {
-    flex: 1,
-    gap: 12,
-    paddingVertical: 10,
-  },
-  kicker: {
-    color: theme.colors.inkMuted,
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  value: {
-    color: theme.colors.ink,
-    fontSize: 54,
-    lineHeight: 56,
-    fontWeight: "800",
-  },
-  barTrack: {
-    height: 14,
-    borderRadius: 999,
-    backgroundColor: theme.colors.stroke,
-    overflow: "hidden",
-  },
-  barFill: {
-    height: "100%",
-    borderRadius: 999,
-    backgroundColor: theme.colors.signal,
-  },
-  metrics: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  metric: {
-    flex: 1,
-    gap: 4,
-    backgroundColor: theme.colors.panel,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  metricLabel: {
-    color: theme.colors.inkMuted,
-    fontSize: 11,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.9,
-  },
-  metricValue: {
-    color: theme.colors.ink,
-    fontSize: 16,
-    fontWeight: "700",
-    textTransform: "capitalize",
-  },
-});
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="bg-secondary flex-1 gap-1 rounded-xl px-3 py-3">
+      <Text className="text-muted-foreground text-[11px] uppercase tracking-[1px]">{label}</Text>
+      <Badge variant="outline" className="self-start border-transparent bg-background">
+        <Text>{value}</Text>
+      </Badge>
+    </View>
+  );
+}
