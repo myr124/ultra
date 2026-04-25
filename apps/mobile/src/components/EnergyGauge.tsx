@@ -15,7 +15,6 @@ const phaseLabel: Record<string, string> = {
 };
 
 export function EnergyGauge({ energyState }: EnergyGaugeProps) {
-  const trustPercent = Math.round(energyState.confidence * 100);
   const energyPercent = clampPercent(energyState.compositeIndex);
 
   return (
@@ -26,7 +25,6 @@ export function EnergyGauge({ energyState }: EnergyGaugeProps) {
       </View>
       <View className="flex-row gap-2">
         <Metric label="Sleep" value={`${energyState.sleepPressure}%`} progress={energyState.sleepPressure} />
-        <Metric label="Trust" value={`${trustPercent}%`} progress={trustPercent} />
       </View>
     </View>
   );

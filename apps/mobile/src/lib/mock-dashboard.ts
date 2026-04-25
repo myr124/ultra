@@ -1,14 +1,5 @@
 import { createEnergyState, type AvatarState, type CreateTaskInput, type EnergyState } from "@ultra/shared";
 
-export type TimelineItem = {
-  id: string;
-  time: string;
-  title: string;
-  body: string;
-  label: string;
-  tone: "peak" | "transition" | "trough" | "event";
-};
-
 export type RecommendationPreview = {
   id: string;
   type: "focus_block" | "recovery_break" | "fitness_slot" | "fun_slot";
@@ -17,6 +8,13 @@ export type RecommendationPreview = {
   startMinute: number;
   endMinute: number;
   rationale: string[];
+};
+
+export type FocusWindowPreview = {
+  id: string;
+  label: string;
+  startMinute: number;
+  endMinute: number;
 };
 
 type CalendarEventPreview = {
@@ -47,8 +45,8 @@ type ProfileItem = {
 type MvpPreview = {
   avatarState: AvatarState;
   energyState: EnergyState;
-  timeline: TimelineItem[];
   recommendations: RecommendationPreview[];
+  focusWindows: FocusWindowPreview[];
   calendarEvents: CalendarEventPreview[];
   taskBuckets: BucketPreview[];
   profileItems: ProfileItem[];
@@ -65,40 +63,6 @@ export const mvpPreview: MvpPreview = {
     redline: false,
     confidence: 0.88,
   }),
-  timeline: [
-    {
-      id: "t1",
-      time: "Now",
-      title: "High-output window is open",
-      body: "Glucose is stable, HRV is holding, and the current ultradian cycle supports deep work.",
-      label: "peak",
-      tone: "peak",
-    },
-    {
-      id: "t2",
-      time: "11:30 AM",
-      title: "Investor sync stays fixed",
-      body: "Imported from Google Calendar. The engine protects the buffer before and after the meeting.",
-      label: "calendar event",
-      tone: "event",
-    },
-    {
-      id: "t3",
-      time: "2:30 PM",
-      title: "Recovery block recommended",
-      body: "Sleep pressure starts climbing hard here. A short reset prevents the evening from flattening out.",
-      label: "transition",
-      tone: "transition",
-    },
-    {
-      id: "t4",
-      time: "6:10 PM",
-      title: "Training slot fits the trough exit",
-      body: "A lower-cognitive demand block lands after the trough and clears the runway for a calmer evening.",
-      label: "fitness",
-      tone: "trough",
-    },
-  ],
   recommendations: [
     {
       id: "r1",
@@ -135,6 +99,20 @@ export const mvpPreview: MvpPreview = {
         "Protects the morning peak for cognitive work.",
         "Uses the evening rebound without stealing recovery from sleep onset.",
       ],
+    },
+  ],
+  focusWindows: [
+    {
+      id: "f1",
+      label: "Focus cycle 1",
+      startMinute: 9 * 60 + 20,
+      endMinute: 11 * 60,
+    },
+    {
+      id: "f2",
+      label: "Focus cycle 2",
+      startMinute: 16 * 60 + 10,
+      endMinute: 17 * 60 + 40,
     },
   ],
   calendarEvents: [

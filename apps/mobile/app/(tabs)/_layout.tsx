@@ -12,7 +12,7 @@ export default function TabsLayout() {
   const iconMap = {
     index: "sparkles",
     calendar: "calendar-clear",
-    tasks: "grid",
+    profile: "person-circle",
   } as const;
 
   return (
@@ -53,8 +53,8 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: "Today", tabBarShowLabel: false }} />
       <Tabs.Screen name="calendar" options={{ title: "Calendar", tabBarShowLabel: false }} />
-      <Tabs.Screen name="tasks" options={{ title: "Tasks", tabBarShowLabel: false }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarShowLabel: false, href: null }} />
+      <Tabs.Screen name="tasks" options={{ href: null }} />
+      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarShowLabel: false }} />
     </Tabs>
   );
 }
