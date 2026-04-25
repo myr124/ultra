@@ -14,6 +14,8 @@ export type RecommendationPreview = {
   type: "focus_block" | "recovery_break" | "fitness_slot" | "fun_slot";
   title: string;
   timeRange: string;
+  startMinute: number;
+  endMinute: number;
   rationale: string[];
 };
 
@@ -21,6 +23,8 @@ type CalendarEventPreview = {
   id: string;
   title: string;
   timeRange: string;
+  startMinute: number;
+  endMinute: number;
   provider: "google" | "apple" | "outlook";
 };
 
@@ -101,6 +105,8 @@ export const mvpPreview: MvpPreview = {
       type: "focus_block",
       title: "Place roadmap writing before the investor sync",
       timeRange: "9:40 AM - 11:10 AM",
+      startMinute: 9 * 60 + 40,
+      endMinute: 11 * 60 + 10,
       rationale: [
         "Peak physiology is live and confidence is above 85%.",
         "Keeps the fixed meeting from slicing a high-value work block in half.",
@@ -111,6 +117,8 @@ export const mvpPreview: MvpPreview = {
       type: "recovery_break",
       title: "Take a 20-minute walk and drop stimulation",
       timeRange: "2:30 PM - 2:50 PM",
+      startMinute: 14 * 60 + 30,
+      endMinute: 14 * 60 + 50,
       rationale: [
         "Sleep pressure rises before HRV recovers.",
         "A short reset avoids a redline cascade into late afternoon.",
@@ -121,6 +129,8 @@ export const mvpPreview: MvpPreview = {
       type: "fitness_slot",
       title: "Move strength training to the post-trough rebound",
       timeRange: "6:10 PM - 7:00 PM",
+      startMinute: 18 * 60 + 10,
+      endMinute: 19 * 60,
       rationale: [
         "Protects the morning peak for cognitive work.",
         "Uses the evening rebound without stealing recovery from sleep onset.",
@@ -132,18 +142,24 @@ export const mvpPreview: MvpPreview = {
       id: "c1",
       title: "Investor sync",
       timeRange: "11:30 AM - 12:00 PM",
+      startMinute: 11 * 60 + 30,
+      endMinute: 12 * 60,
       provider: "google",
     },
     {
       id: "c2",
       title: "Product standup",
       timeRange: "3:00 PM - 3:20 PM",
+      startMinute: 15 * 60,
+      endMinute: 15 * 60 + 20,
       provider: "google",
     },
     {
       id: "c3",
       title: "Dinner reservation",
       timeRange: "7:45 PM - 9:00 PM",
+      startMinute: 19 * 60 + 45,
+      endMinute: 21 * 60,
       provider: "apple",
     },
   ],
