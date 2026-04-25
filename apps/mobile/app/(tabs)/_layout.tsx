@@ -2,30 +2,32 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useColorScheme } from "nativewind";
 
+import { THEME } from "@/lib/theme";
+
 export default function TabsLayout() {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
+  const t = isDark ? THEME.dark : THEME.light;
 
   const iconMap = {
     index: "sparkles",
     calendar: "calendar-clear",
     tasks: "grid",
-    profile: "person-circle",
   } as const;
 
   return (
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: isDark ? "hsl(39 40% 93%)" : "hsl(28 16% 10%)",
-        tabBarInactiveTintColor: isDark ? "hsl(36 16% 67%)" : "hsl(33 11% 38%)",
+        tabBarActiveTintColor: t.foreground,
+        tabBarInactiveTintColor: t.mutedForeground,
         tabBarStyle: {
           height: 82,
           paddingTop: 8,
           paddingBottom: 16,
-          backgroundColor: isDark ? "hsl(180 9% 10%)" : "hsl(42 60% 97%)",
+          backgroundColor: t.card,
           borderTopWidth: 1,
-          borderTopColor: isDark ? "hsl(180 8% 20%)" : "hsl(36 28% 80%)",
+          borderTopColor: t.border,
         },
         tabBarIconStyle: {
           marginBottom: 4,
@@ -39,7 +41,7 @@ export default function TabsLayout() {
         ),
         tabBarLabelStyle: {
           fontSize: 11,
-          fontFamily: "Inter_600SemiBold",
+          fontFamily: "Quicksand_600SemiBold",
           letterSpacing: 0.3,
         },
         tabBarItemStyle: {
@@ -49,10 +51,10 @@ export default function TabsLayout() {
         },
       })}
     >
-      <Tabs.Screen name="index" options={{ title: "Today" }} />
-      <Tabs.Screen name="calendar" options={{ title: "Calendar" }} />
-      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen name="index" options={{ title: "Today", tabBarShowLabel: false }} />
+      <Tabs.Screen name="calendar" options={{ title: "Calendar", tabBarShowLabel: false }} />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks", tabBarShowLabel: false }} />
+      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarShowLabel: false, href: null }} />
     </Tabs>
   );
 }

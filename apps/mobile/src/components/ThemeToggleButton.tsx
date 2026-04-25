@@ -2,10 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 
 import { Button } from "@/components/ui/button";
+import { THEME } from "@/lib/theme";
 
 export function ThemeToggleButton() {
   const { colorScheme, toggleColorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
+  const t = isDark ? THEME.dark : THEME.light;
 
   return (
     <Button
@@ -16,7 +18,7 @@ export function ThemeToggleButton() {
       variant="outline"
     >
       <Ionicons
-        color={isDark ? "hsl(39 40% 93%)" : "hsl(28 16% 10%)"}
+        color={t.foreground}
         name={isDark ? "sunny" : "moon"}
         size={18}
       />
