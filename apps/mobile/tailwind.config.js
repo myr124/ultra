@@ -52,9 +52,9 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Inter_500Medium"],
-        semibold: ["Inter_600SemiBold"],
-        bold: ["Inter_700Bold"],
+        sans: ["Quicksand_500Medium"],
+        semibold: ["Quicksand_600SemiBold"],
+        bold: ["Quicksand_700Bold"],
       },
       borderWidth: {
         hairline: hairlineWidth(),

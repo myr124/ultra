@@ -1,10 +1,10 @@
 import "../global.css";
 
 import {
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
+  Quicksand_500Medium,
+  Quicksand_600SemiBold,
+  Quicksand_700Bold,
+} from "@expo-google-fonts/quicksand";
 import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { useFonts } from "expo-font";
@@ -36,9 +36,9 @@ function AppShell() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    Quicksand_500Medium,
+    Quicksand_600SemiBold,
+    Quicksand_700Bold,
   });
 
   if (!fontsLoaded) {

@@ -1,41 +1,81 @@
-import { View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, View } from "react-native";
 
+import LottieView from "lottie-react-native";
 import type { AvatarState } from "@ultra/shared";
 
-import { Badge } from "@/components/ui/badge";
-import { Text } from "@/components/ui/text";
-import { cn } from "@/lib/utils";
-
-const avatarCopy: Record<AvatarState, string> = {
-  focused: "Locked in",
-  drifting: "Coasting",
-  redlining: "Overclocked",
-  recovering: "Resetting",
-  offline: "Waiting",
-};
-
-const toneMap: Record<AvatarState, string> = {
-  focused: "bg-accent/15 border-accent/40",
-  drifting: "bg-secondary border-border",
-  redlining: "bg-destructive/15 border-destructive/40",
-  recovering: "bg-accent/10 border-accent/30",
-  offline: "bg-muted border-border",
-};
+type EnergyAvatarMode = "focus" | "rest";
 
 type EnergyAvatarProps = {
   state: AvatarState;
+  mode: EnergyAvatarMode;
 };
 
-export function EnergyAvatar({ state }: EnergyAvatarProps) {
+const modeConfig: Record<EnergyAvatarMode, { speed: number; glow: string; size: number }> = {
+  focus: { speed: 1, glow: "bg-primary/18", size: 180 },
+  rest: { speed: 0.55, glow: "bg-secondary/20", size: 164 },
+};
+
+export function EnergyAvatar({ state, mode }: EnergyAvatarProps) {
+  const motion = useRef(new Animated.Value(0)).current;
+  const config = modeConfig[mode];
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(motion, {
+          toValue: 1,
+          duration: mode === "focus" ? 1800 : 2800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(motion, {
+          toValue: 0,
+          duration: mode === "focus" ? 1800 : 2800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    loop.start();
+
+    return () => {
+      loop.stop();
+    };
+  }, [mode, motion]);
+
+  const floatY = motion.interpolate({
+    inputRange: [0, 1],
+    outputRange: mode === "focus" ? [0, -8] : [0, -4],
+  });
+
+  const scale = motion.interpolate({
+    inputRange: [0, 1],
+    outputRange: mode === "focus" ? [1, 1.035] : [0.98, 1.01],
+  });
+
+  const glowOpacity = motion.interpolate({
+    inputRange: [0, 1],
+    outputRange: mode === "focus" ? [0.18, 0.34] : [0.12, 0.22],
+  });
+
   return (
-    <View className={cn("w-32 gap-4 rounded-[28px] border p-5", toneMap[state])}>
-      <View className="flex-row justify-between px-2.5">
-        <View className="bg-foreground h-[18px] w-[18px] rounded-full" />
-        <View className="bg-foreground h-[18px] w-[18px] rounded-full" />
-      </View>
-      <Badge variant="outline" className="self-start border-transparent bg-background">
-        <Text>{avatarCopy[state]}</Text>
-      </Badge>
+    <View className="items-center justify-center self-center">
+      <Animated.View
+        pointerEvents="none"
+        className={`absolute h-36 w-36 rounded-full blur-3xl ${config.glow}`}
+        style={{ opacity: glowOpacity, transform: [{ scale }] }}
+      />
+      <Animated.View style={{ transform: [{ translateY: floatY }, { scale }] }}>
+        <LottieView
+          autoPlay
+          loop
+          speed={config.speed}
+          source={require("../../assets/sloth-sleeping.json")}
+          style={{ width: config.size, height: config.size, opacity: state === "offline" ? 0.55 : 1 }}
+        />
+      </Animated.View>
     </View>
   );
 }
