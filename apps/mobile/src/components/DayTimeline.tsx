@@ -24,10 +24,18 @@ type DayTimelineItem = {
 type DayTimelineProps = {
   title: string;
   items: DayTimelineItem[];
+  highlights?: DayTimelineHighlight[];
   startHour?: number;
   endHour?: number;
   onAddRecommendation?: (id: string) => void;
   onIgnoreRecommendation?: (id: string) => void;
+};
+
+type DayTimelineHighlight = {
+  id: string;
+  startMinute: number;
+  endMinute: number;
+  label: string;
 };
 
 type PositionedTimelineItem = DayTimelineItem & {
@@ -125,6 +133,7 @@ function positionItems(items: DayTimelineItem[]): PositionedTimelineItem[] {
 export function DayTimeline({
   title,
   items,
+  highlights = [],
   startHour = 8,
   endHour = 21,
   onAddRecommendation,
@@ -168,6 +177,25 @@ export function DayTimeline({
                 />
               </Fragment>
             ))}
+
+            {highlights.map((highlight) => {
+              const top = ((highlight.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
+              const height = ((highlight.endMinute - highlight.startMinute) / 60) * HOUR_HEIGHT;
+
+              return (
+                <View
+                  key={highlight.id}
+                  className="absolute left-0 right-0 overflow-hidden rounded-[24px] border border-primary/12 bg-primary/[0.06]"
+                  style={{ top, height }}
+                >
+                  <View className="px-4 py-3">
+                    <Text className="text-[10px] font-semibold uppercase tracking-[1.8px] text-primary/70">
+                      {highlight.label}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
 
             {positionedItems.map((item) => {
               const top = ((item.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
@@ -260,4 +288,4 @@ export function DayTimeline({
   );
 }
 
-export type { DayTimelineItem };
+export type { DayTimelineHighlight, DayTimelineItem };
