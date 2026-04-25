@@ -26,7 +26,6 @@ type CalendarEventPreview = {
 
 type BucketPreview = {
   bucket: CreateTaskInput["bucket"];
-  headline: string;
   tasks: Array<{
     title: string;
     durationMin: number;
@@ -151,7 +150,6 @@ export const mvpPreview: MvpPreview = {
   taskBuckets: [
     {
       bucket: "work",
-      headline: "Heavy tasks belong in the morning peak.",
       tasks: [
         { title: "Roadmap writing", durationMin: 90, effort: "high", status: "scheduled" },
         { title: "Review backend heuristics", durationMin: 45, effort: "medium", status: "todo" },
@@ -159,7 +157,6 @@ export const mvpPreview: MvpPreview = {
     },
     {
       bucket: "fitness",
-      headline: "Training moves after the first major trough.",
       tasks: [
         { title: "Strength session", durationMin: 50, effort: "high", status: "scheduled" },
         { title: "Mobility reset", durationMin: 20, effort: "low", status: "todo" },
@@ -167,7 +164,6 @@ export const mvpPreview: MvpPreview = {
     },
     {
       bucket: "fun",
-      headline: "Low-stakes rewards help recovery stay real.",
       tasks: [
         { title: "Call Maya", durationMin: 25, effort: "low", status: "todo" },
         { title: "Watch one episode", durationMin: 40, effort: "low", status: "todo" },

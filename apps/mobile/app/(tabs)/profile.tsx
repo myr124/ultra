@@ -1,116 +1,49 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
+import { Badge } from "@/components/ui/badge";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Text } from "@/components/ui/text";
 import { SurfaceCard } from "@/src/components/SurfaceCard";
-import { theme } from "@/src/constants/theme";
+import { ThemeToggleButton } from "@/src/components/ThemeToggleButton";
 import { mvpPreview } from "@/src/lib/mock-dashboard";
 
 export default function ProfileScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.hero}>
-        <Text style={styles.kicker}>Profile</Text>
-        <Text style={styles.title}>Closed alpha controls for calibration, sync, and nudges.</Text>
-        <Text style={styles.subtitle}>
-          This is the MVP shell for preferences and connection status, not the final account
-          surface.
-        </Text>
+    <ScrollView className="bg-background" contentContainerClassName="gap-5 px-5 pb-10 pt-20">
+      <View className="flex-row items-start justify-between gap-4">
+        <View className="gap-2">
+          <Badge variant="outline" className="self-start bg-secondary">
+            <Text>Profile</Text>
+          </Badge>
+          <Text className="text-4xl font-bold tracking-tight text-foreground">Only essentials.</Text>
+        </View>
+        <ThemeToggleButton />
       </View>
 
-      <SurfaceCard accent={theme.colors.moss}>
-        <Text style={styles.cardTitle}>Alpha status</Text>
-        <Text style={styles.cardBody}>
-          Magic-link auth enabled. Read-only calendar connected. Notifications armed for redline
-          crossings, recovery starts, and low-ROI work sessions.
-        </Text>
+      <SurfaceCard accent="accent">
+        <CardHeader className="gap-2 px-5 py-5">
+          <Text className="text-xs uppercase tracking-[1.6px] text-muted-foreground">Status</Text>
+          <CardTitle className="text-3xl">Alpha live</CardTitle>
+        </CardHeader>
       </SurfaceCard>
 
-      <View style={styles.stack}>
+      <View className="gap-3">
         {mvpPreview.profileItems.map((item) => (
-          <SurfaceCard key={item.label}>
-            <View style={styles.itemRow}>
-              <View style={styles.itemMeta}>
-                <Text style={styles.itemLabel}>{item.label}</Text>
-                <Text style={styles.itemValue}>{item.value}</Text>
+          <SurfaceCard key={item.label} accent="muted">
+            <CardContent className="px-5 py-5">
+              <View className="flex-row items-center justify-between gap-3">
+                <View className="flex-1 gap-1">
+                  <Text className="text-xs uppercase tracking-[1.4px] text-muted-foreground">{item.label}</Text>
+                  <Text className="text-lg font-semibold text-foreground">{item.value}</Text>
+                </View>
+                <Badge variant={item.status === "live" ? "default" : "secondary"}>
+                  <Text>{item.status}</Text>
+                </Badge>
               </View>
-              <Text style={styles.itemStatus}>{item.status}</Text>
-            </View>
+            </CardContent>
           </SurfaceCard>
         ))}
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 82,
-    paddingBottom: 40,
-    gap: 18,
-    backgroundColor: theme.colors.canvas,
-  },
-  hero: {
-    gap: 10,
-  },
-  kicker: {
-    color: theme.colors.moss,
-    fontSize: 13,
-    fontWeight: "800",
-    letterSpacing: 1.4,
-    textTransform: "uppercase",
-  },
-  title: {
-    color: theme.colors.ink,
-    fontSize: 31,
-    lineHeight: 37,
-    fontWeight: "800",
-    fontFamily: "Georgia",
-  },
-  subtitle: {
-    color: theme.colors.inkMuted,
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  cardTitle: {
-    color: theme.colors.ink,
-    fontSize: 18,
-    fontWeight: "800",
-    marginBottom: 8,
-  },
-  cardBody: {
-    color: theme.colors.inkMuted,
-    fontSize: 15,
-    lineHeight: 23,
-  },
-  stack: {
-    gap: 12,
-  },
-  itemRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 12,
-    alignItems: "center",
-  },
-  itemMeta: {
-    flex: 1,
-    gap: 4,
-  },
-  itemLabel: {
-    color: theme.colors.inkMuted,
-    fontSize: 13,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  itemValue: {
-    color: theme.colors.ink,
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  itemStatus: {
-    color: theme.colors.signal,
-    fontSize: 13,
-    fontWeight: "800",
-    textTransform: "capitalize",
-  },
-});

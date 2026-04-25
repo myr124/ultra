@@ -1,8 +1,10 @@
-import { StyleSheet, Text, View } from "react-native";
+import { View } from "react-native";
 
 import type { AvatarState } from "@ultra/shared";
 
-import { theme } from "@/src/constants/theme";
+import { Badge } from "@/components/ui/badge";
+import { Text } from "@/components/ui/text";
+import { cn } from "@/lib/utils";
 
 const avatarCopy: Record<AvatarState, string> = {
   focused: "Locked in",
@@ -12,72 +14,28 @@ const avatarCopy: Record<AvatarState, string> = {
   offline: "Waiting",
 };
 
+const toneMap: Record<AvatarState, string> = {
+  focused: "bg-accent/15 border-accent/40",
+  drifting: "bg-secondary border-border",
+  redlining: "bg-destructive/15 border-destructive/40",
+  recovering: "bg-accent/10 border-accent/30",
+  offline: "bg-muted border-border",
+};
+
 type EnergyAvatarProps = {
   state: AvatarState;
 };
 
 export function EnergyAvatar({ state }: EnergyAvatarProps) {
   return (
-    <View
-      style={[
-        styles.shell,
-        state === "focused" ? styles.focused : undefined,
-        state === "drifting" ? styles.drifting : undefined,
-        state === "redlining" ? styles.redlining : undefined,
-        state === "recovering" ? styles.recovering : undefined,
-      ]}
-    >
-      <View style={styles.face}>
-        <View style={styles.eye} />
-        <View style={styles.eye} />
+    <View className={cn("w-32 gap-4 rounded-[28px] border p-5", toneMap[state])}>
+      <View className="flex-row justify-between px-2.5">
+        <View className="bg-foreground h-[18px] w-[18px] rounded-full" />
+        <View className="bg-foreground h-[18px] w-[18px] rounded-full" />
       </View>
-      <Text style={styles.label}>{avatarCopy[state]}</Text>
+      <Badge variant="outline" className="self-start border-transparent bg-background">
+        <Text>{avatarCopy[state]}</Text>
+      </Badge>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  shell: {
-    width: 134,
-    borderRadius: 30,
-    paddingHorizontal: 18,
-    paddingVertical: 20,
-    backgroundColor: theme.colors.paper,
-    borderWidth: 1,
-    borderColor: theme.colors.stroke,
-    gap: 16,
-    shadowColor: theme.colors.shadow,
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 2,
-  },
-  focused: {
-    backgroundColor: "#f7efe0",
-  },
-  drifting: {
-    backgroundColor: "#efe5d9",
-  },
-  recovering: {
-    backgroundColor: "#e3f0e7",
-  },
-  redlining: {
-    backgroundColor: "#f6d7cb",
-  },
-  face: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
-  },
-  eye: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: theme.colors.ink,
-  },
-  label: {
-    color: theme.colors.ink,
-    fontSize: 16,
-    fontWeight: "700",
-  },
-});

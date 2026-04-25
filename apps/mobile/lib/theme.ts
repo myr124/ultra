@@ -1,0 +1,73 @@
+import { DarkTheme, DefaultTheme, type Theme } from "@react-navigation/native";
+
+export const THEME = {
+  light: {
+    background: "hsl(38 38% 92%)",
+    foreground: "hsl(28 16% 10%)",
+    card: "hsl(42 60% 97%)",
+    cardForeground: "hsl(28 16% 10%)",
+    popover: "hsl(42 60% 97%)",
+    popoverForeground: "hsl(28 16% 10%)",
+    primary: "hsl(21 64% 53%)",
+    primaryForeground: "hsl(42 60% 97%)",
+    secondary: "hsl(40 25% 88%)",
+    secondaryForeground: "hsl(28 16% 10%)",
+    muted: "hsl(39 26% 90%)",
+    mutedForeground: "hsl(33 11% 38%)",
+    accent: "hsl(128 22% 39%)",
+    accentForeground: "hsl(42 60% 97%)",
+    destructive: "hsl(16 73% 57%)",
+    destructiveForeground: "hsl(42 60% 97%)",
+    border: "hsl(36 28% 80%)",
+    input: "hsl(36 28% 80%)",
+    ring: "hsl(21 64% 53%)",
+    radius: "1rem",
+  },
+  dark: {
+    background: "hsl(180 8% 7%)",
+    foreground: "hsl(39 40% 93%)",
+    card: "hsl(180 9% 10%)",
+    cardForeground: "hsl(39 40% 93%)",
+    popover: "hsl(180 9% 10%)",
+    popoverForeground: "hsl(39 40% 93%)",
+    primary: "hsl(21 79% 63%)",
+    primaryForeground: "hsl(180 8% 7%)",
+    secondary: "hsl(180 7% 16%)",
+    secondaryForeground: "hsl(39 40% 93%)",
+    muted: "hsl(180 7% 16%)",
+    mutedForeground: "hsl(36 16% 67%)",
+    accent: "hsl(140 29% 57%)",
+    accentForeground: "hsl(180 8% 7%)",
+    destructive: "hsl(15 74% 58%)",
+    destructiveForeground: "hsl(39 40% 93%)",
+    border: "hsl(180 8% 20%)",
+    input: "hsl(180 8% 20%)",
+    ring: "hsl(21 79% 63%)",
+    radius: "1rem",
+  },
+} as const;
+
+export const NAV_THEME: Record<"light" | "dark", Theme> = {
+  light: {
+    ...DefaultTheme,
+    colors: {
+      background: THEME.light.background,
+      border: THEME.light.border,
+      card: THEME.light.card,
+      notification: THEME.light.destructive,
+      primary: THEME.light.primary,
+      text: THEME.light.foreground,
+    },
+  },
+  dark: {
+    ...DarkTheme,
+    colors: {
+      background: THEME.dark.background,
+      border: THEME.dark.border,
+      card: THEME.dark.card,
+      notification: THEME.dark.destructive,
+      primary: THEME.dark.primary,
+      text: THEME.dark.foreground,
+    },
+  },
+};

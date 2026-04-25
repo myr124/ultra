@@ -5,7 +5,7 @@
     "scheme": "ultra",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
       "expo-notifications"
@@ -19,6 +19,9 @@
     },
     "android": {
       "package": "com.ultra.app"
+    },
+    "web": {
+      "bundler": "metro"
     }
   }
 }

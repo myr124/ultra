@@ -1,34 +1,30 @@
 import type { PropsWithChildren } from "react";
-import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import type { ViewStyle } from "react-native";
 
-import { theme } from "@/src/constants/theme";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 type SurfaceCardProps = PropsWithChildren<{
-  accent?: string;
-  style?: StyleProp<ViewStyle>;
+  accent?: "primary" | "accent" | "muted" | "destructive" | "foreground";
+  style?: ViewStyle;
+  className?: string;
 }>;
 
-export function SurfaceCard({ accent, children, style }: SurfaceCardProps) {
+const accentClassMap = {
+  primary: "border-primary/70",
+  accent: "border-accent/70",
+  muted: "border-border",
+  destructive: "border-destructive/70",
+  foreground: "border-foreground/20",
+} as const;
+
+export function SurfaceCard({ accent = "muted", children, className, style }: SurfaceCardProps) {
   return (
-    <View style={[styles.card, accent ? { borderLeftColor: accent } : undefined, style]}>
+    <Card
+      className={cn("rounded-2xl border px-0 py-0 shadow-sm shadow-black/5", accentClassMap[accent], className)}
+      style={style}
+    >
       {children}
-    </View>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.paper,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: theme.colors.stroke,
-    borderLeftWidth: 6,
-    borderLeftColor: theme.colors.stroke,
-    padding: 20,
-    shadowColor: "#4c3c2c",
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 2,
-  },
-});
