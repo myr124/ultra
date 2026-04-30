@@ -10,7 +10,7 @@ export default function TabsLayout() {
   const t = isDark ? THEME.dark : THEME.light;
 
   const iconMap = {
-    index: "sparkles",
+    index: "home",
     calendar: "calendar-clear",
     profile: "person-circle",
   } as const;
@@ -51,10 +51,19 @@ export default function TabsLayout() {
         },
       })}
     >
-      <Tabs.Screen name="index" options={{ title: "Today", tabBarShowLabel: false }} />
-      <Tabs.Screen name="calendar" options={{ title: "Calendar", tabBarShowLabel: false }} />
+      <Tabs.Screen
+        name="index"
+        options={{ title: "Today", tabBarShowLabel: false }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{ title: "Calendar", tabBarShowLabel: false }}
+      />
       <Tabs.Screen name="tasks" options={{ href: null }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarShowLabel: false }} />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: "Profile", tabBarShowLabel: false }}
+      />
     </Tabs>
   );
 }

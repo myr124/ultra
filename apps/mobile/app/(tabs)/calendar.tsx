@@ -1,7 +1,13 @@
 import { useMemo, useState } from "react";
 import { ScrollView } from "react-native";
 
-import { DayTimeline, type DayTimelineHighlight, type DayTimelineItem } from "@/src/components/DayTimeline";
+import { useRouter } from "expo-router";
+
+import {
+  DayTimeline,
+  type DayTimelineHighlight,
+  type DayTimelineItem,
+} from "@/src/components/DayTimeline";
 import { mvpPreview } from "@/src/lib/mock-dashboard";
 
 const recommendationAccentMap = {
@@ -20,12 +26,14 @@ const recommendationLabelMap = {
 
 export default function CalendarScreen() {
   const { recommendations, calendarEvents, focusWindows } = mvpPreview;
-  const [recommendationState, setRecommendationState] = useState<Record<string, "pending" | "accepted" | "ignored">>(
+  const router = useRouter();
+  const [recommendationState, setRecommendationState] = useState<
+    Record<string, "pending" | "accepted" | "ignored">
+  >(
     () =>
-      Object.fromEntries(recommendations.map((recommendation) => [recommendation.id, "pending"])) as Record<
-        string,
-        "pending" | "accepted" | "ignored"
-      >,
+      Object.fromEntries(
+        recommendations.map((recommendation) => [recommendation.id, "pending"]),
+      ) as Record<string, "pending" | "accepted" | "ignored">,
   );
 
   const highlightWindows = useMemo<DayTimelineHighlight[]>(
@@ -55,7 +63,8 @@ export default function CalendarScreen() {
         })),
         ...recommendations.flatMap((recommendation) => {
           const status = recommendationState[recommendation.id];
-          const timelineStatus: DayTimelineItem["status"] = status === "accepted" ? "accepted" : "pending";
+          const timelineStatus: DayTimelineItem["status"] =
+            status === "accepted" ? "accepted" : "pending";
 
           if (status === "ignored") {
             return [];
@@ -88,14 +97,22 @@ export default function CalendarScreen() {
     setRecommendationState((current) => ({ ...current, [id]: "ignored" }));
   };
 
+  const selectCalendarEvent = (id: string) => {
+    router.push(`../calendar-events/${id}`);
+  };
+
   return (
-    <ScrollView className="bg-background" contentContainerClassName="px-5 pb-10 pt-20">
+    <ScrollView
+      className="bg-background"
+      contentContainerClassName="px-5 pb-10 pt-20"
+    >
       <DayTimeline
-        title="Calendar timeline"
+        title="Timeline"
         highlights={highlightWindows}
         items={timelineItems}
         onAddRecommendation={addRecommendation}
         onIgnoreRecommendation={ignoreRecommendation}
+        onSelectEvent={selectCalendarEvent}
       />
     </ScrollView>
   );

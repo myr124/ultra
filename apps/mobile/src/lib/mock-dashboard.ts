@@ -17,7 +17,7 @@ export type FocusWindowPreview = {
   endMinute: number;
 };
 
-type CalendarEventPreview = {
+export type CalendarEventPreview = {
   id: string;
   title: string;
   timeRange: string;

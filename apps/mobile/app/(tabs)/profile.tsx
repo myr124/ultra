@@ -26,9 +26,7 @@ export default function ProfileScreen() {
     >
       <View className="flex-row items-start justify-between gap-4">
         <View className="gap-2">
-          <Badge variant="outline" className="self-start bg-secondary">
-            <Text>Profile</Text>
-          </Badge>
+          <Text className="text-3xl font-bold text-foreground">Profile</Text>
         </View>
         <ThemeToggleButton />
       </View>
