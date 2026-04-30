@@ -1,11 +1,14 @@
 import { Fragment, useMemo } from "react";
-import { View } from "react-native";
+import { Pressable, View, type ViewStyle } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
+import { Plus, Trash2 } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { THEME } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 type DayTimelineItem = {
@@ -29,6 +32,7 @@ type DayTimelineProps = {
   endHour?: number;
   onAddRecommendation?: (id: string) => void;
   onIgnoreRecommendation?: (id: string) => void;
+  onSelectEvent?: (id: string) => void;
 };
 
 type DayTimelineHighlight = {
@@ -43,11 +47,19 @@ type PositionedTimelineItem = DayTimelineItem & {
   laneCount: number;
 };
 
+type RhythmSegment = {
+  id: string;
+  kind: "focus" | "rest";
+  label: string;
+  startMinute: number;
+  endMinute: number;
+};
+
 const HOUR_HEIGHT = 88;
 const ITEM_GAP_MINUTES = 8;
 
 const MIN_ITEM_HEIGHT: Record<DayTimelineItem["kind"], number> = {
-  event: 96,
+  event: 116,
   recommendation: 124,
 };
 
@@ -84,12 +96,63 @@ function getMinimumItemHeight(item: DayTimelineItem) {
 }
 
 function getRenderedItemHeight(item: DayTimelineItem) {
-  const durationHeight = ((item.endMinute - item.startMinute) / 60) * HOUR_HEIGHT;
+  const durationHeight =
+    ((item.endMinute - item.startMinute) / 60) * HOUR_HEIGHT;
   return Math.max(durationHeight, getMinimumItemHeight(item));
 }
 
 function getRenderedEndMinute(item: DayTimelineItem) {
   return item.startMinute + (getRenderedItemHeight(item) / HOUR_HEIGHT) * 60;
+}
+
+function buildRhythmSegments(
+  highlights: DayTimelineHighlight[],
+  startMinute: number,
+  endMinute: number,
+): RhythmSegment[] {
+  const clippedHighlights = highlights
+    .map((highlight) => ({
+      ...highlight,
+      startMinute: Math.max(highlight.startMinute, startMinute),
+      endMinute: Math.min(highlight.endMinute, endMinute),
+    }))
+    .filter((highlight) => highlight.startMinute < highlight.endMinute)
+    .sort((a, b) => a.startMinute - b.startMinute);
+  const segments: RhythmSegment[] = [];
+  let cursor = startMinute;
+
+  for (const highlight of clippedHighlights) {
+    if (cursor < highlight.startMinute) {
+      segments.push({
+        id: `rest-${cursor}-${highlight.startMinute}`,
+        kind: "rest",
+        label: "Rest",
+        startMinute: cursor,
+        endMinute: highlight.startMinute,
+      });
+    }
+
+    segments.push({
+      id: highlight.id,
+      kind: "focus",
+      label: "Focus",
+      startMinute: highlight.startMinute,
+      endMinute: highlight.endMinute,
+    });
+    cursor = Math.max(cursor, highlight.endMinute);
+  }
+
+  if (cursor < endMinute) {
+    segments.push({
+      id: `rest-${cursor}-${endMinute}`,
+      kind: "rest",
+      label: "Rest",
+      startMinute: cursor,
+      endMinute,
+    });
+  }
+
+  return segments;
 }
 
 function positionItems(items: DayTimelineItem[]): PositionedTimelineItem[] {
@@ -112,7 +175,9 @@ function positionItems(items: DayTimelineItem[]): PositionedTimelineItem[] {
 
     for (const item of cluster) {
       const renderedEndMinute = getRenderedEndMinute(item) + ITEM_GAP_MINUTES;
-      let lane = laneEndMinutes.findIndex((endMinute) => endMinute <= item.startMinute);
+      let lane = laneEndMinutes.findIndex(
+        (endMinute) => endMinute <= item.startMinute,
+      );
 
       if (lane === -1) {
         lane = laneEndMinutes.length;
@@ -147,7 +212,10 @@ function positionItems(items: DayTimelineItem[]): PositionedTimelineItem[] {
 
     if (item.startMinute < clusterEnd) {
       cluster.push(item);
-      clusterEnd = Math.max(clusterEnd, getRenderedEndMinute(item) + ITEM_GAP_MINUTES);
+      clusterEnd = Math.max(
+        clusterEnd,
+        getRenderedEndMinute(item) + ITEM_GAP_MINUTES,
+      );
       continue;
     }
 
@@ -169,11 +237,21 @@ export function DayTimeline({
   endHour = 21,
   onAddRecommendation,
   onIgnoreRecommendation,
+  onSelectEvent,
 }: DayTimelineProps) {
+  const { colorScheme } = useColorScheme();
+  const theme = colorScheme === "dark" ? THEME.dark : THEME.light;
   const totalHours = endHour - startHour + 1;
   const timelineHeight = totalHours * HOUR_HEIGHT;
-  const hours = Array.from({ length: totalHours }, (_, index) => startHour + index);
+  const hours = Array.from(
+    { length: totalHours },
+    (_, index) => startHour + index,
+  );
   const positionedItems = useMemo(() => positionItems(items), [items]);
+  const rhythmSegments = useMemo(
+    () => buildRhythmSegments(highlights, startHour * 60, endHour * 60),
+    [endHour, highlights, startHour],
+  );
   const contentHeight = useMemo(
     () =>
       Math.max(
@@ -189,10 +267,7 @@ export function DayTimeline({
   return (
     <View className="gap-4">
       <View className="flex-row items-center justify-between">
-        <Text className="text-xl font-bold text-foreground">{title}</Text>
-        <Badge variant="outline" className="bg-secondary">
-          <Text>{items.length} blocks</Text>
-        </Badge>
+        <Text className="text-3xl font-bold text-foreground">{title}</Text>
       </View>
 
       <View className="rounded-[28px] border border-border bg-card px-4 py-4">
@@ -205,6 +280,26 @@ export function DayTimeline({
                 </Text>
               </View>
             ))}
+          </View>
+
+          <View className="w-2" style={{ height: timelineHeight }}>
+            {rhythmSegments.map((segment) => {
+              const top =
+                ((segment.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
+              const height =
+                ((segment.endMinute - segment.startMinute) / 60) * HOUR_HEIGHT;
+
+              return (
+                <View
+                  key={segment.id}
+                  className={cn(
+                    "absolute left-0 right-0 rounded-full",
+                    segment.kind === "focus" ? "bg-primary" : "bg-secondary",
+                  )}
+                  style={{ top, height: Math.max(height - 4, 8) }}
+                />
+              );
+            })}
           </View>
 
           <View className="flex-1" style={{ height: contentHeight }}>
@@ -220,111 +315,162 @@ export function DayTimeline({
               </Fragment>
             ))}
 
-            {highlights.map((highlight) => {
-              const top = ((highlight.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
-              const height = ((highlight.endMinute - highlight.startMinute) / 60) * HOUR_HEIGHT;
-
-              return (
-                <View
-                  key={highlight.id}
-                  className="absolute left-0 right-0 overflow-hidden rounded-[24px] border border-primary/12 bg-primary/[0.06]"
-                  style={{ top, height }}
-                >
-                  <View className="px-4 py-3">
-                    <Text className="text-[10px] font-semibold uppercase tracking-[1.8px] text-primary/70">
-                      {highlight.label}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-
             {positionedItems.map((item) => {
-              const top = ((item.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
+              const top =
+                ((item.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
               const height = getRenderedItemHeight(item);
               const widthPercent = 100 / item.laneCount;
-              const laneWidthPercent = item.laneCount > 1 ? widthPercent - 1.5 : widthPercent;
+              const laneWidthPercent =
+                item.laneCount > 1 ? widthPercent - 1.5 : widthPercent;
               const isCompact = item.laneCount > 1;
-
-              return (
-                <View
-                  key={item.id}
-                  className={cn(
-                    "absolute left-0 right-0 rounded-3xl border px-4 py-4",
-                    accentClassMap[item.accent],
-                    item.kind === "recommendation" && item.status === "pending" && "border-dashed",
-                  )}
-                  style={{
-                    top,
-                    height,
-                    width: `${laneWidthPercent}%`,
-                    left: `${item.lane * laneWidthPercent}%`,
-                  }}
-                >
-                  <View className="gap-2">
-                    <View className={cn(isCompact ? "gap-2" : "flex-row items-start justify-between gap-2")}>
-                      <Badge variant="outline" className="self-start bg-secondary/80 px-3 py-1">
-                        <Text numberOfLines={1}>{item.badgeLabel}</Text>
-                      </Badge>
-                      <View className={cn("min-w-0 flex-1 gap-1", isCompact ? "items-start" : "items-end")}>
-                        {item.metaLabel ? (
-                          <Text
-                            className={cn(
-                              "text-xs uppercase tracking-[1.3px] text-muted-foreground",
-                              !isCompact && "text-right",
-                            )}
-                            numberOfLines={isCompact ? 2 : 1}
-                          >
-                            {item.metaLabel}
-                          </Text>
-                        ) : null}
-                        <View className="flex-row items-center gap-1">
-                          {item.kind === "recommendation" ? (
-                            <Ionicons
-                              name={item.status === "accepted" ? "sparkles" : "add-circle-outline"}
-                              size={16}
-                              color="#71717a"
-                            />
-                          ) : (
-                            <Ionicons name="calendar-outline" size={16} color="#71717a" />
+              const titleLineCount = item.kind === "event" && isCompact ? 2 : 3;
+              const cardClassName = cn(
+                "absolute left-0 right-0 rounded-3xl border px-4 py-4",
+                item.kind === "event" && "active:opacity-80",
+                accentClassMap[item.accent],
+                item.kind === "recommendation" &&
+                  item.status === "pending" &&
+                  "border-dashed",
+              );
+              const cardStyle: ViewStyle = {
+                top,
+                height,
+                width: `${laneWidthPercent}%` as `${number}%`,
+                left: `${item.lane * widthPercent}%` as `${number}%`,
+              };
+              const cardContent = (
+                <View className="gap-2">
+                  <View
+                    className={cn(
+                      isCompact
+                        ? "gap-2"
+                        : "flex-row items-start justify-between gap-2",
+                    )}
+                  >
+                    <Badge
+                      variant="outline"
+                      className="self-start bg-secondary/80 px-3 py-1"
+                    >
+                      <Text numberOfLines={1}>{item.badgeLabel}</Text>
+                    </Badge>
+                    <View
+                      className={cn(
+                        "min-w-0 flex-1 gap-1",
+                        isCompact ? "items-start" : "items-end",
+                      )}
+                    >
+                      {item.metaLabel ? (
+                        <Text
+                          className={cn(
+                            "text-xs uppercase tracking-[1.3px] text-muted-foreground",
+                            !isCompact && "text-right",
                           )}
-                          <Text className="text-xs font-medium uppercase tracking-[1.2px] text-muted-foreground">
-                            {formatClock(item.startMinute)}
-                          </Text>
-                        </View>
+                          numberOfLines={isCompact ? 2 : 1}
+                        >
+                          {item.metaLabel}
+                        </Text>
+                      ) : null}
+                      <View className="flex-row items-center gap-1">
+                        {item.kind === "recommendation" ? (
+                          <Ionicons
+                            name={
+                              item.status === "accepted"
+                                ? "sparkles"
+                                : "add-circle-outline"
+                            }
+                            size={16}
+                            color="#71717a"
+                          />
+                        ) : (
+                          <Ionicons
+                            name="calendar-outline"
+                            size={16}
+                            color="#71717a"
+                          />
+                        )}
+                        <Text className="text-xs font-medium uppercase tracking-[1.2px] text-muted-foreground">
+                          {formatClock(item.startMinute)}
+                        </Text>
+                        {item.kind === "event" ? (
+                          <Ionicons
+                            name="chevron-forward"
+                            size={14}
+                            color="#71717a"
+                          />
+                        ) : null}
                       </View>
                     </View>
-
-                    <Text className="text-base font-semibold leading-5 text-foreground" numberOfLines={3}>
-                      {item.title}
-                    </Text>
-
-                    {item.kind === "recommendation" ? (
-                      item.status === "accepted" ? (
-                        <Badge className="self-start bg-primary">
-                          <Text>Added</Text>
-                        </Badge>
-                      ) : (
-                        <View className={cn("gap-2", isCompact ? "flex-col" : "flex-row")}>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className={cn(isCompact ? "w-full" : "flex-1")}
-                            onPress={() => onIgnoreRecommendation?.(item.id)}
-                          >
-                            <Text>Ignore</Text>
-                          </Button>
-                          <Button
-                            size="sm"
-                            className={cn(isCompact ? "w-full" : "flex-1")}
-                            onPress={() => onAddRecommendation?.(item.id)}
-                          >
-                            <Text>Add</Text>
-                          </Button>
-                        </View>
-                      )
-                    ) : null}
                   </View>
+
+                  <Text
+                    className={cn(
+                      "font-semibold text-foreground",
+                      item.kind === "event" && isCompact
+                        ? "text-sm leading-4"
+                        : "text-base leading-5",
+                    )}
+                    numberOfLines={titleLineCount}
+                    ellipsizeMode="tail"
+                  >
+                    {item.title}
+                  </Text>
+
+                  {item.kind === "recommendation" ? (
+                    item.status === "accepted" ? (
+                      <Badge className="self-start bg-primary">
+                        <Text>Added</Text>
+                      </Badge>
+                    ) : (
+                      <View
+                        className={cn(
+                          "gap-2",
+                          isCompact ? "flex-row" : "flex-col",
+                        )}
+                      >
+                        <Button
+                          accessibilityLabel="Ignore recommendation"
+                          size="sm"
+                          variant="outline"
+                          className="h-9 w-9 px-0"
+                          onPress={() => onIgnoreRecommendation?.(item.id)}
+                        >
+                          <Trash2
+                            size={17}
+                            strokeWidth={2.3}
+                            color={theme.mutedForeground}
+                          />
+                        </Button>
+                        <Button
+                          accessibilityLabel="Add recommendation"
+                          size="sm"
+                          className="h-9 w-9 px-0"
+                          onPress={() => onAddRecommendation?.(item.id)}
+                        >
+                          <Plus
+                            size={17}
+                            strokeWidth={2.6}
+                            color={theme.primaryForeground}
+                          />
+                        </Button>
+                      </View>
+                    )
+                  ) : null}
+                </View>
+              );
+
+              return item.kind === "event" ? (
+                <Pressable
+                  key={item.id}
+                  accessibilityRole="button"
+                  className={cardClassName}
+                  style={cardStyle}
+                  onPress={() => onSelectEvent?.(item.id)}
+                >
+                  {cardContent}
+                </Pressable>
+              ) : (
+                <View key={item.id} className={cardClassName} style={cardStyle}>
+                  {cardContent}
                 </View>
               );
             })}
