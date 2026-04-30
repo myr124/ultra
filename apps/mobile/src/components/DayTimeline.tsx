@@ -1,5 +1,10 @@
-import { Fragment, useMemo } from "react";
-import { Pressable, View, type ViewStyle } from "react-native";
+import { Fragment, useMemo, useRef, useState } from "react";
+import {
+  PanResponder,
+  Pressable,
+  View,
+  type ViewStyle,
+} from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import { Plus, Trash2 } from "lucide-react-native";
@@ -33,6 +38,7 @@ type DayTimelineProps = {
   onAddRecommendation?: (id: string) => void;
   onIgnoreRecommendation?: (id: string) => void;
   onSelectEvent?: (id: string) => void;
+  onSelectRecommendation?: (id: string) => void;
 };
 
 type DayTimelineHighlight = {
@@ -57,6 +63,8 @@ type RhythmSegment = {
 
 const HOUR_HEIGHT = 88;
 const ITEM_GAP_MINUTES = 8;
+const COLLAPSED_RHYTHM_WIDTH = 8;
+const EXPANDED_RHYTHM_WIDTH = 52;
 
 const MIN_ITEM_HEIGHT: Record<DayTimelineItem["kind"], number> = {
   event: 116,
@@ -238,9 +246,12 @@ export function DayTimeline({
   onAddRecommendation,
   onIgnoreRecommendation,
   onSelectEvent,
+  onSelectRecommendation,
 }: DayTimelineProps) {
   const { colorScheme } = useColorScheme();
   const theme = colorScheme === "dark" ? THEME.dark : THEME.light;
+  const [isRhythmRailExpanded, setIsRhythmRailExpanded] = useState(false);
+  const isRhythmRailArmed = useRef(false);
   const totalHours = endHour - startHour + 1;
   const timelineHeight = totalHours * HOUR_HEIGHT;
   const hours = Array.from(
@@ -263,6 +274,29 @@ export function DayTimeline({
       ),
     [positionedItems, startHour, timelineHeight],
   );
+  const rhythmRailResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gestureState) =>
+          isRhythmRailArmed.current && Math.abs(gestureState.dx) > 6,
+        onPanResponderMove: (_, gestureState) => {
+          if (gestureState.dx > 24) {
+            setIsRhythmRailExpanded(true);
+          }
+
+          if (gestureState.dx < -18) {
+            setIsRhythmRailExpanded(false);
+          }
+        },
+        onPanResponderRelease: () => {
+          isRhythmRailArmed.current = false;
+        },
+        onPanResponderTerminate: () => {
+          isRhythmRailArmed.current = false;
+        },
+      }),
+    [],
+  );
 
   return (
     <View className="gap-4">
@@ -282,25 +316,56 @@ export function DayTimeline({
             ))}
           </View>
 
-          <View className="w-2" style={{ height: timelineHeight }}>
+          <Pressable
+            delayLongPress={180}
+            hitSlop={{ left: 12, right: 12 }}
+            onLongPress={() => {
+              isRhythmRailArmed.current = true;
+            }}
+            onPressOut={() => {
+              isRhythmRailArmed.current = false;
+            }}
+            style={{
+              height: timelineHeight,
+              width: isRhythmRailExpanded
+                ? EXPANDED_RHYTHM_WIDTH
+                : COLLAPSED_RHYTHM_WIDTH,
+            }}
+            {...rhythmRailResponder.panHandlers}
+          >
             {rhythmSegments.map((segment) => {
               const top =
                 ((segment.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
               const height =
                 ((segment.endMinute - segment.startMinute) / 60) * HOUR_HEIGHT;
+              const segmentHeight = Math.max(height - 4, 8);
 
               return (
                 <View
                   key={segment.id}
                   className={cn(
-                    "absolute left-0 right-0 rounded-full",
+                    "absolute left-0 right-0 items-center justify-center rounded-full",
                     segment.kind === "focus" ? "bg-primary" : "bg-secondary",
                   )}
-                  style={{ top, height: Math.max(height - 4, 8) }}
-                />
+                  style={{ top, height: segmentHeight }}
+                >
+                  {isRhythmRailExpanded && segmentHeight >= 28 ? (
+                    <Text
+                      className={cn(
+                        "text-center text-[9px] font-bold uppercase tracking-[1px]",
+                        segment.kind === "focus"
+                          ? "text-primary-foreground"
+                          : "text-secondary-foreground",
+                      )}
+                      numberOfLines={1}
+                    >
+                      {segment.label}
+                    </Text>
+                  ) : null}
+                </View>
               );
             })}
-          </View>
+          </Pressable>
 
           <View className="flex-1" style={{ height: contentHeight }}>
             {hours.map((hour, index) => (
@@ -324,9 +389,12 @@ export function DayTimeline({
                 item.laneCount > 1 ? widthPercent - 1.5 : widthPercent;
               const isCompact = item.laneCount > 1;
               const titleLineCount = item.kind === "event" && isCompact ? 2 : 3;
+              const isSelectableRecommendation =
+                item.kind === "recommendation" && item.status === "accepted";
               const cardClassName = cn(
                 "absolute left-0 right-0 rounded-3xl border px-4 py-4",
-                item.kind === "event" && "active:opacity-80",
+                (item.kind === "event" || isSelectableRecommendation) &&
+                  "active:opacity-80",
                 accentClassMap[item.accent],
                 item.kind === "recommendation" &&
                   item.status === "pending" &&
@@ -397,6 +465,12 @@ export function DayTimeline({
                             size={14}
                             color="#71717a"
                           />
+                        ) : isSelectableRecommendation ? (
+                          <Ionicons
+                            name="chevron-forward"
+                            size={14}
+                            color="#71717a"
+                          />
                         ) : null}
                       </View>
                     </View>
@@ -458,13 +532,27 @@ export function DayTimeline({
                 </View>
               );
 
-              return item.kind === "event" ? (
+              if (item.kind === "event") {
+                return (
+                  <Pressable
+                    key={item.id}
+                    accessibilityRole="button"
+                    className={cardClassName}
+                    style={cardStyle}
+                    onPress={() => onSelectEvent?.(item.id)}
+                  >
+                    {cardContent}
+                  </Pressable>
+                );
+              }
+
+              return isSelectableRecommendation ? (
                 <Pressable
                   key={item.id}
                   accessibilityRole="button"
                   className={cardClassName}
                   style={cardStyle}
-                  onPress={() => onSelectEvent?.(item.id)}
+                  onPress={() => onSelectRecommendation?.(item.id)}
                 >
                   {cardContent}
                 </Pressable>

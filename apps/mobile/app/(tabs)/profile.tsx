@@ -1,14 +1,39 @@
 import { ScrollView, View } from "react-native";
 
+import { Ionicons } from "@expo/vector-icons";
+import { Apple, CalendarDays } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
+
 import { Badge } from "@/components/ui/badge";
 import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
+import { THEME } from "@/lib/theme";
 import { EnergyAvatar } from "@/src/components/EnergyAvatar";
 import { SurfaceCard } from "@/src/components/SurfaceCard";
 import { ThemeToggleButton } from "@/src/components/ThemeToggleButton";
-import { mvpPreview } from "@/src/lib/mock-dashboard";
+import { mvpPreview, type CalendarEventPreview } from "@/src/lib/mock-dashboard";
+
+function ProviderIcon({
+  provider,
+  color,
+}: {
+  provider: CalendarEventPreview["provider"];
+  color: string;
+}) {
+  if (provider === "apple") {
+    return <Apple size={18} strokeWidth={2.2} color={color} />;
+  }
+
+  if (provider === "google") {
+    return <Ionicons name="logo-google" size={18} color={color} />;
+  }
+
+  return <CalendarDays size={18} strokeWidth={2.2} color={color} />;
+}
 
 export default function ProfileScreen() {
+  const { colorScheme } = useColorScheme();
+  const theme = colorScheme === "dark" ? THEME.dark : THEME.light;
   const { avatarState, calendarEvents } = mvpPreview;
   const connectedProviders = Array.from(
     new Set(calendarEvents.map((event) => event.provider)),
@@ -59,27 +84,18 @@ export default function ProfileScreen() {
               </Text>
               <CardTitle className="text-2xl">Connected and syncing</CardTitle>
             </View>
-            <Badge>
-              <Text>Live</Text>
-            </Badge>
           </View>
         </CardHeader>
         <CardContent className="gap-4 px-5 pb-5">
-          <Text className="leading-5 text-muted-foreground">
-            {connectedProviders
-              .map((provider) => providerLabelMap[provider])
-              .join(" + ")}{" "}
-            events are available for scheduling and recommendations.
-          </Text>
-
           <View className="flex-row flex-wrap gap-2">
             {connectedProviders.map((provider) => (
               <Badge
                 key={provider}
+                accessibilityLabel={providerLabelMap[provider]}
                 variant="secondary"
-                className="bg-secondary"
+                className="h-10 w-10 rounded-full bg-secondary px-0 py-0"
               >
-                <Text>{providerLabelMap[provider]}</Text>
+                <ProviderIcon provider={provider} color={theme.secondaryForeground} />
               </Badge>
             ))}
           </View>

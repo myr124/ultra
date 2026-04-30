@@ -91,6 +91,7 @@ export default function CalendarScreen() {
 
   const addRecommendation = (id: string) => {
     setRecommendationState((current) => ({ ...current, [id]: "accepted" }));
+    router.push(`../recommendations/${id}`);
   };
 
   const ignoreRecommendation = (id: string) => {
@@ -99,6 +100,10 @@ export default function CalendarScreen() {
 
   const selectCalendarEvent = (id: string) => {
     router.push(`../calendar-events/${id}`);
+  };
+
+  const selectRecommendation = (id: string) => {
+    router.push(`../recommendations/${id}`);
   };
 
   return (
@@ -113,6 +118,7 @@ export default function CalendarScreen() {
         onAddRecommendation={addRecommendation}
         onIgnoreRecommendation={ignoreRecommendation}
         onSelectEvent={selectCalendarEvent}
+        onSelectRecommendation={selectRecommendation}
       />
     </ScrollView>
   );
