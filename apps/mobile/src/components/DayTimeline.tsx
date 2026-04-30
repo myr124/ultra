@@ -44,6 +44,14 @@ type PositionedTimelineItem = DayTimelineItem & {
 };
 
 const HOUR_HEIGHT = 88;
+const ITEM_GAP_MINUTES = 8;
+
+const MIN_ITEM_HEIGHT: Record<DayTimelineItem["kind"], number> = {
+  event: 96,
+  recommendation: 124,
+};
+
+const PENDING_RECOMMENDATION_HEIGHT = 168;
 
 const accentClassMap: Record<DayTimelineItem["accent"], string> = {
   primary: "border-primary/70 bg-primary/8",
@@ -67,8 +75,30 @@ function formatClock(minute: number) {
   return `${displayHour}:${minutePart.toString().padStart(2, "0")} ${suffix}`;
 }
 
+function getMinimumItemHeight(item: DayTimelineItem) {
+  if (item.kind === "recommendation" && item.status === "pending") {
+    return PENDING_RECOMMENDATION_HEIGHT;
+  }
+
+  return MIN_ITEM_HEIGHT[item.kind];
+}
+
+function getRenderedItemHeight(item: DayTimelineItem) {
+  const durationHeight = ((item.endMinute - item.startMinute) / 60) * HOUR_HEIGHT;
+  return Math.max(durationHeight, getMinimumItemHeight(item));
+}
+
+function getRenderedEndMinute(item: DayTimelineItem) {
+  return item.startMinute + (getRenderedItemHeight(item) / HOUR_HEIGHT) * 60;
+}
+
 function positionItems(items: DayTimelineItem[]): PositionedTimelineItem[] {
-  const sorted = [...items].sort((a, b) => a.startMinute - b.startMinute || a.endMinute - b.endMinute);
+  const sorted = [...items].sort(
+    (a, b) =>
+      a.startMinute - b.startMinute ||
+      (a.kind === "event" ? 0 : 1) - (b.kind === "event" ? 0 : 1) ||
+      a.endMinute - b.endMinute,
+  );
   const positioned: PositionedTimelineItem[] = [];
 
   let cluster: DayTimelineItem[] = [];
@@ -81,13 +111,14 @@ function positionItems(items: DayTimelineItem[]): PositionedTimelineItem[] {
     const clusterItems: PositionedTimelineItem[] = [];
 
     for (const item of cluster) {
+      const renderedEndMinute = getRenderedEndMinute(item) + ITEM_GAP_MINUTES;
       let lane = laneEndMinutes.findIndex((endMinute) => endMinute <= item.startMinute);
 
       if (lane === -1) {
         lane = laneEndMinutes.length;
-        laneEndMinutes.push(item.endMinute);
+        laneEndMinutes.push(renderedEndMinute);
       } else {
-        laneEndMinutes[lane] = item.endMinute;
+        laneEndMinutes[lane] = renderedEndMinute;
       }
 
       clusterItems.push({
@@ -110,19 +141,19 @@ function positionItems(items: DayTimelineItem[]): PositionedTimelineItem[] {
   for (const item of sorted) {
     if (cluster.length === 0) {
       cluster = [item];
-      clusterEnd = item.endMinute;
+      clusterEnd = getRenderedEndMinute(item) + ITEM_GAP_MINUTES;
       continue;
     }
 
     if (item.startMinute < clusterEnd) {
       cluster.push(item);
-      clusterEnd = Math.max(clusterEnd, item.endMinute);
+      clusterEnd = Math.max(clusterEnd, getRenderedEndMinute(item) + ITEM_GAP_MINUTES);
       continue;
     }
 
     flushCluster();
     cluster = [item];
-    clusterEnd = item.endMinute;
+    clusterEnd = getRenderedEndMinute(item) + ITEM_GAP_MINUTES;
   }
 
   flushCluster();
@@ -143,6 +174,17 @@ export function DayTimeline({
   const timelineHeight = totalHours * HOUR_HEIGHT;
   const hours = Array.from({ length: totalHours }, (_, index) => startHour + index);
   const positionedItems = useMemo(() => positionItems(items), [items]);
+  const contentHeight = useMemo(
+    () =>
+      Math.max(
+        timelineHeight,
+        ...positionedItems.map((item) => {
+          const top = ((item.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
+          return top + getRenderedItemHeight(item) + 16;
+        }),
+      ),
+    [positionedItems, startHour, timelineHeight],
+  );
 
   return (
     <View className="gap-4">
@@ -153,7 +195,7 @@ export function DayTimeline({
         </Badge>
       </View>
 
-      <View className="overflow-hidden rounded-[28px] border border-border bg-card px-4 py-4">
+      <View className="rounded-[28px] border border-border bg-card px-4 py-4">
         <View className="flex-row gap-3">
           <View className="w-14 pt-2">
             {hours.map((hour) => (
@@ -165,7 +207,7 @@ export function DayTimeline({
             ))}
           </View>
 
-          <View className="flex-1" style={{ height: timelineHeight }}>
+          <View className="flex-1" style={{ height: contentHeight }}>
             {hours.map((hour, index) => (
               <Fragment key={hour}>
                 <View
@@ -199,21 +241,16 @@ export function DayTimeline({
 
             {positionedItems.map((item) => {
               const top = ((item.startMinute - startHour * 60) / 60) * HOUR_HEIGHT;
-              const minHeight =
-                item.kind === "recommendation" && item.status === "pending"
-                  ? 124
-                  : item.kind === "recommendation"
-                    ? 88
-                    : 68;
-              const height = Math.max(((item.endMinute - item.startMinute) / 60) * HOUR_HEIGHT, minHeight);
+              const height = getRenderedItemHeight(item);
               const widthPercent = 100 / item.laneCount;
-              const laneWidthPercent = widthPercent;
+              const laneWidthPercent = item.laneCount > 1 ? widthPercent - 1.5 : widthPercent;
+              const isCompact = item.laneCount > 1;
 
               return (
                 <View
                   key={item.id}
                   className={cn(
-                    "absolute left-0 right-0 overflow-hidden rounded-3xl border px-4 py-4",
+                    "absolute left-0 right-0 rounded-3xl border px-4 py-4",
                     accentClassMap[item.accent],
                     item.kind === "recommendation" && item.status === "pending" && "border-dashed",
                   )}
@@ -225,13 +262,19 @@ export function DayTimeline({
                   }}
                 >
                   <View className="gap-2">
-                    <View className="flex-row items-start justify-between gap-2">
+                    <View className={cn(isCompact ? "gap-2" : "flex-row items-start justify-between gap-2")}>
                       <Badge variant="outline" className="self-start bg-secondary/80 px-3 py-1">
                         <Text numberOfLines={1}>{item.badgeLabel}</Text>
                       </Badge>
-                      <View className="min-w-0 flex-1 items-end gap-1">
+                      <View className={cn("min-w-0 flex-1 gap-1", isCompact ? "items-start" : "items-end")}>
                         {item.metaLabel ? (
-                          <Text className="text-right text-xs uppercase tracking-[1.3px] text-muted-foreground" numberOfLines={1}>
+                          <Text
+                            className={cn(
+                              "text-xs uppercase tracking-[1.3px] text-muted-foreground",
+                              !isCompact && "text-right",
+                            )}
+                            numberOfLines={isCompact ? 2 : 1}
+                          >
                             {item.metaLabel}
                           </Text>
                         ) : null}
@@ -262,16 +305,20 @@ export function DayTimeline({
                           <Text>Added</Text>
                         </Badge>
                       ) : (
-                        <View className="flex-row gap-2">
+                        <View className={cn("gap-2", isCompact ? "flex-col" : "flex-row")}>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1"
+                            className={cn(isCompact ? "w-full" : "flex-1")}
                             onPress={() => onIgnoreRecommendation?.(item.id)}
                           >
                             <Text>Ignore</Text>
                           </Button>
-                          <Button size="sm" className="flex-1" onPress={() => onAddRecommendation?.(item.id)}>
+                          <Button
+                            size="sm"
+                            className={cn(isCompact ? "w-full" : "flex-1")}
+                            onPress={() => onAddRecommendation?.(item.id)}
+                          >
                             <Text>Add</Text>
                           </Button>
                         </View>
